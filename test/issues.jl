@@ -2,6 +2,14 @@
 
 BUCKET_NAME = "aws-jl-test-issues---" * _now_formatted()
 
+# We try to be insensitive to the existence of other logging messages, so we test
+# by counting the number of messages that meet some criteria
+function log_is_retry(successful)
+    return record ->
+        record.level == Logging.Debug &&
+        get(record.kwargs, :retry, nothing) == successful
+end
+
 try
     S3.create_bucket(BUCKET_NAME)
 
@@ -202,12 +210,24 @@ try
         config = AWSConfig(; creds=nothing)
 
         @testset "Fail 2 attempts then succeed" begin
-            apply(_incomplete_patch(; data=data, num_attempts_to_fail=2)) do
-                retrieved = S3.get_object(bucket, key; aws_config=config)
+            logger = Test.TestLogger(; min_level=Logging.Debug)
+            with_logger(logger) do
+                apply(_incomplete_patch(; data=data, num_attempts_to_fail=2)) do
+                    retrieved = S3.get_object(bucket, key; aws_config=config)
 
-                @test length(retrieved) == n
-                @test retrieved == data
+                    @test length(retrieved) == n
+                    @test retrieved == data
+                end
             end
+            logs = logger.logs
+
+            println("Fail two ")
+            println(logs)
+
+            # Two successful retries
+            @test count(log_is_retry(true), logs) == 2
+            # No unsuccessful ones
+            @test count(log_is_retry(false), logs) == 0
         end
 
         @testset "Fail all 4 attempts then throw" begin
@@ -218,15 +238,27 @@ try
             end
             io = IOBuffer()
 
-            apply(_incomplete_patch(; data=data, num_attempts_to_fail=4)) do
-                params = Dict("response_stream" => io)
-                @test_throws err_t S3.get_object(bucket, key, params; aws_config=config)
+            logger = Test.TestLogger(; min_level=Logging.Debug)
+            with_logger(logger) do
+                apply(_incomplete_patch(; data=data, num_attempts_to_fail=4)) do
+                    params = Dict("response_stream" => io)
+                    @test_throws err_t S3.get_object(bucket, key, params; aws_config=config)
 
-                seekstart(io)
-                retrieved = read(io)
-                @test length(retrieved) == n - 1
-                @test retrieved == data[1:(n - 1)]
+                    seekstart(io)
+                    retrieved = read(io)
+                    @test length(retrieved) == n - 1
+                    @test retrieved == data[1:(n - 1)]
+                end
             end
+            logs = logger.logs
+
+            println("Fail 4")
+            println(logs)
+
+            # Three successful retries - from the inner retry loop
+            @test count(log_is_retry(true), logs) == 3
+            # One unsuccessful one - from the outer loop where we pass it on
+            @test count(log_is_retry(false), logs) == 1
         end
     end
 

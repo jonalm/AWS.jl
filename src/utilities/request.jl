@@ -147,22 +147,29 @@ function submit_request(aws::AbstractAWSConfig, request::Request; return_headers
             if e isa HTTP.StatusError
                 e = AWSException(e, stream)
                 rethrow(e)
+            elseif !(e isa AWSException)
+                @debug "AWS.jl declined to retry non-AWSException" retry=false reason="Non-AWSException" exception=e
             end
             rethrow()
         end
     end
 
-    check = function (s, e)
+    check = (s, e) -> begin
         # Pass on non-AWS exceptions.
         if !(e isa AWSException)
+            @debug "AWS.jl declined to retry non-AWSException" retry=false reason="Non-AWSException" exception=e
             return false
         end
 
-        occursin("Signature expired", e.message) && return true
+        if occursin("Signature expired", e.message)
+            @debug "AWS.jl retry for signature expired" retry=true reason="Signature expired" exception=e
+            return true
+        end
 
         # Handle ExpiredToken...
         # https://github.com/aws/aws-sdk-go/blob/v1.31.5/aws/request/retryer.go#L98
         if e isa AWSException && e.code in EXPIRED_ERROR_CODES
+            @debug "AWS.jl retry for expired credentials" retry=true reason="Credentials expired" exception=e
             check_credentials(credentials(aws); force_refresh=true)
             return true
         end
@@ -170,29 +177,41 @@ function submit_request(aws::AbstractAWSConfig, request::Request; return_headers
         # Throttle handling
         # https://github.com/boto/botocore/blob/1.16.17/botocore/data/_retry.json
         # https://docs.aws.amazon.com/general/latest/gr/api-retries.html
-        if _http_status(e.cause) == TOO_MANY_REQUESTS || e.code in THROTTLING_ERROR_CODES
+        if _http_status(e.cause) == TOO_MANY_REQUESTS
+            @debug "AWS.jl retry too many requests" retry=true reason="too many requests" exception=e
+            return true
+        elseif e.code in THROTTLING_ERROR_CODES
+            @debug "AWS.jl retry for throttling" retry=true reason="throttled" exception=e
             return true
         end
 
         # Handle BadDigest error and CRC32 check sum failure
-        if _header(e.cause, "crc32body") == "x-amz-crc32" ||
-            e.code in ("BadDigest", "RequestTimeout", "RequestTimeoutException")
+        if _header(e.cause, "crc32body") == "x-amz-crc32"
+            @debug "AWS.jl retry for check sum failure" retry=true reason="Check sum failure" exception=e
+            return true
+        end
+
+        if e.code in ("BadDigest", "RequestTimeout", "RequestTimeoutException")
+            @debug "AWS.jl retry for $(e.code)" retry=true reason="$(e.code)" exception=e
             return true
         end
 
         if occursin("Missing Authentication Token", e.message) &&
             aws.credentials === nothing
+            @debug "AWS.jl declined to retry request without credentials" retry=false reason="No credentials" exception=e
+
             return throw(
                 NoCredentials(
-                    "You're attempting to perform a request without credentials set."
+                    "You're attempting to perform a request without credentials set.",
                 ),
             )
         end
+
+        @debug "AWS.jl declined to retry uncaught error" retry=false reason="Error unhandled" exception=e
         return false
     end
 
     delays = AWSExponentialBackoff(; max_attempts=max_attempts(aws))
-
     retry(upgrade_error(get_response); check=check, delays=delays)()
 
     if request.use_response_type
@@ -234,13 +253,23 @@ function _http_request(http_backend::HTTPBackend, request::Request, response_str
         return nothing
     end
 
-    check = function (s, e)
-        return isa(e, HTTP.ConnectError) ||
-               isa(e, HTTP.RequestError) ||
-               (isa(e, HTTP.StatusError) && _http_status(e) >= 500)
-    end
-
     delays = AWSExponentialBackoff(; max_attempts=4)
+
+    check = (s, e) -> begin
+        errors = (Sockets.DNSError, HTTP.ParseError, Base.IOError)
+        for error in errors
+            if isa(e, error)
+                @debug "AWS.jl HTTP inner retry for $error" retry=true reason="$error" exception=e
+                return true
+            end
+        end
+        if (isa(e, HTTP.StatusError) && _http_status(e) >= 500)
+            @debug "AWS.jl HTTP inner retry for status >= 500" retry=true reason="status >= 500" status=_http_status(e) exception=e
+            return true
+        end
+        @debug "AWS.jl HTTP inner retry declined" retry=false reason="Exception passed onwards" exception=e
+        return false
+    end
 
     try
         retry(get_response; check=check, delays=delays)()
