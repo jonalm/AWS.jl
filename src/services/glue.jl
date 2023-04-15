@@ -1892,7 +1892,8 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"Description"`: The description of the session.
 - `"GlueVersion"`: The Glue version determines the versions of Apache Spark and Python that
   Glue supports. The GlueVersion must be greater than 2.0.
-- `"IdleTimeout"`: The number of seconds when idle before request times out.
+- `"IdleTimeout"`:  The number of minutes when idle before session times out. Default for
+  Spark ETL jobs is value of Timeout. Consult the documentation for other job types.
 - `"MaxCapacity"`: The number of Glue data processing units (DPUs) that can be allocated
   when the job runs. A DPU is a relative measure of processing power that consists of 4 vCPUs
   of compute capacity and 16 GB memory.
@@ -1902,7 +1903,9 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"SecurityConfiguration"`: The name of the SecurityConfiguration structure to be used
   with the session
 - `"Tags"`: The map of key value pairs (tags) belonging to the session.
-- `"Timeout"`: The number of seconds before request times out.
+- `"Timeout"`:  The number of minutes before session times out. Default for Spark ETL jobs
+  is 48 hours (2880 minutes), the maximum session lifetime for this job type. Consult the
+  documentation for other job types.
 - `"WorkerType"`: The type of predefined worker that is allocated to use for the session.
   Accepts a value of Standard, G.1X, G.2X, or G.025X.   For the Standard worker type, each
   worker provides 4 vCPU, 16 GB of memory and a 50GB disk, and 2 executors per worker.   For
@@ -3826,9 +3829,11 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"MaxResults"`: The maximum number of databases to return in one response.
 - `"NextToken"`: A continuation token, if this is a continuation call.
 - `"ResourceShareType"`: Allows you to specify that you want to list the databases shared
-  with your account. The allowable values are FOREIGN or ALL.    If set to FOREIGN, will list
-  the databases shared with your account.    If set to ALL, will list the databases shared
-  with your account, as well as the databases in yor local account.
+  with your account. The allowable values are FEDERATED, FOREIGN or ALL.    If set to
+  FEDERATED, will list the federated databases (referencing an external entity) shared with
+  your account.   If set to FOREIGN, will list the databases shared with your account.    If
+  set to ALL, will list the databases shared with your account, as well as the databases in
+  yor local account.
 """
 function get_databases(; aws_config::AbstractAWSConfig=global_aws_config())
     return glue("GetDatabases"; aws_config=aws_config, feature_set=SERVICE_FEATURE_SET)
@@ -7830,7 +7835,6 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"Description"`: A description of the ruleset.
 - `"Ruleset"`: A Data Quality Definition Language (DQDL) ruleset. For more information, see
   the Glue developer guide.
-- `"UpdatedName"`: The new name of the ruleset, if you are renaming it.
 """
 function update_data_quality_ruleset(
     Name; aws_config::AbstractAWSConfig=global_aws_config()

@@ -118,7 +118,8 @@ account, you don't need to create a project policy.  To copy a model, the destin
 project, source project, and source model version must already exist.  Copying a model
 version takes a while to complete. To get the current status, call DescribeProjectVersions
 and check the value of Status in the ProjectVersionDescription object. The copy operation
-has finished when the value of Status is COPYING_COMPLETED.
+has finished when the value of Status is COPYING_COMPLETED. This operation requires
+permissions to perform the rekognition:CopyProjectVersion action.
 
 # Arguments
 - `destination_project_arn`: The ARN of the project in the trusted AWS account that you
@@ -300,6 +301,45 @@ function create_dataset(
 end
 
 """
+    create_face_liveness_session()
+    create_face_liveness_session(params::Dict{String,<:Any})
+
+This API operation initiates a Face Liveness session. It returns a SessionId, which you can
+use to start streaming Face Liveness video and get the results for a Face Liveness session.
+You can use the OutputConfig option in the Settings parameter to provide an Amazon S3
+bucket location. The Amazon S3 bucket stores reference images and audit images. You can use
+AuditImagesLimit to limit of audit images returned. This number is between 0 and 4. By
+default, it is set to 0. The limit is best effort and based on the duration of the
+selfie-video.
+
+# Optional Parameters
+Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
+- `"ClientRequestToken"`: Idempotent token is used to recognize the Face Liveness request.
+  If the same token is used with multiple CreateFaceLivenessSession requests, the same
+  session is returned. This token is employed to avoid unintentionally creating the same
+  session multiple times.
+- `"KmsKeyId"`:  The identifier for your AWS Key Management Service key (AWS KMS key). Used
+  to encrypt audit images and reference images.
+- `"Settings"`: A session settings object. It contains settings for the operation to be
+  performed. For Face Liveness, it accepts OutputConfig and AuditImagesLimit.
+"""
+function create_face_liveness_session(; aws_config::AbstractAWSConfig=global_aws_config())
+    return rekognition(
+        "CreateFaceLivenessSession"; aws_config=aws_config, feature_set=SERVICE_FEATURE_SET
+    )
+end
+function create_face_liveness_session(
+    params::AbstractDict{String}; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return rekognition(
+        "CreateFaceLivenessSession",
+        params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
     create_project(project_name)
     create_project(project_name, params::Dict{String,<:Any})
 
@@ -435,16 +475,16 @@ faces or to detect labels in a streaming video. Amazon Rekognition Video is a co
 live video from Amazon Kinesis Video Streams. There are two different settings for stream
 processors in Amazon Rekognition: detecting faces and detecting labels.   If you are
 creating a stream processor for detecting faces, you provide as input a Kinesis video
-stream (Input) and a Kinesis data stream (Output) stream. You also specify the face
-recognition criteria in Settings. For example, the collection containing faces that you
-want to recognize. After you have finished analyzing a streaming video, use
+stream (Input) and a Kinesis data stream (Output) stream for receiving the output. You must
+use the FaceSearch option in Settings, specifying the collection that contains the faces
+you want to recognize. After you have finished analyzing a streaming video, use
 StopStreamProcessor to stop processing.   If you are creating a stream processor to detect
 labels, you provide as input a Kinesis video stream (Input), Amazon S3 bucket information
 (Output), and an Amazon SNS topic ARN (NotificationChannel). You can also provide a KMS key
 ID to encrypt the data sent to your Amazon S3 bucket. You specify what you want to detect
-in ConnectedHomeSettings, such as people, packages and people, or pets, people, and
-packages. You can also specify where in the frame you want Amazon Rekognition to monitor
-with RegionsOfInterest. When you run the StartStreamProcessor operation on a label
+by using the ConnectedHome option in settings, and selecting one of the following: PERSON,
+PET, PACKAGE, ALL You can also specify where in the frame you want Amazon Rekognition to
+monitor with RegionsOfInterest. When you run the StartStreamProcessor operation on a label
 detection stream processor, you input start and stop information to determine the length of
 the processing time.    Use Name to assign an identifier for the stream processor. You use
 Name to manage the stream processor. For example, you can start processing the source video
@@ -707,7 +747,8 @@ end
 
 Deletes an existing project policy. To get a list of project policies attached to a
 project, call ListProjectPolicies. To attach a project policy to a project, call
-PutProjectPolicy.
+PutProjectPolicy. This operation requires permissions to perform the
+rekognition:DeleteProjectPolicy action.
 
 # Arguments
 - `policy_name`: The name of the policy that you want to delete.
@@ -1164,13 +1205,13 @@ specify MinConfidence to control the confidence threshold for the labels returne
 default is 55%. You can also add the MaxLabels parameter to limit the number of labels
 returned. The default and upper limit is 1000 labels.  Response Elements   For each object,
 scene, and concept the API returns one or more labels. The API returns the following types
-of information regarding labels:    Name - The name of the detected label.     Confidence -
-The level of confidence in the label assigned to a detected object.     Parents - The
-ancestor labels for a detected label. DetectLabels returns a hierarchical taxonomy of
-detected labels. For example, a detected car might be assigned the label car. The label car
-has two parent labels: Vehicle (its parent) and Transportation (its grandparent). The
-response includes the all ancestors for a label, where every ancestor is a unique label. In
-the previous example, Car, Vehicle, and Transportation are returned as unique labels in the
+of information about labels:    Name - The name of the detected label.     Confidence - The
+level of confidence in the label assigned to a detected object.     Parents - The ancestor
+labels for a detected label. DetectLabels returns a hierarchical taxonomy of detected
+labels. For example, a detected car might be assigned the label car. The label car has two
+parent labels: Vehicle (its parent) and Transportation (its grandparent). The response
+includes the all ancestors for a label, where every ancestor is a unique label. In the
+previous example, Car, Vehicle, and Transportation are returned as unique labels in the
 response.     Aliases - Possible Aliases for the label.     Categories - The label
 categories that the detected label belongs to.     BoundingBox — Bounding boxes are
 described for all instances of detected common object labels, returned in an array of
@@ -1194,8 +1235,8 @@ three labels.   {Name: flower,Confidence: 99.0562}   {Name: plant,Confidence: 99
 {Name: tulip,Confidence: 99.0562}  In this example, the detection algorithm more precisely
 identifies the flower as a tulip.  If the object detected is a person, the operation
 doesn't provide the same facial details that the DetectFaces operation provides.  This is a
-stateless API operation. That is, the operation does not persist any data. This operation
-requires permissions to perform the rekognition:DetectLabels action.
+stateless API operation that doesn't return any data. This operation requires permissions
+to perform the rekognition:DetectLabels action.
 
 # Arguments
 - `image`: The input image as base64-encoded bytes or an S3 object. If you use the AWS CLI
@@ -1219,8 +1260,8 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"Settings"`: A list of the filters to be applied to returned detected labels and image
   properties. Specified filters can be inclusive, exclusive, or a combination of both.
   Filters can be used for individual labels or label categories. The exact label names or
-  label categories must be supplied. For a full list of labels and label categories, see LINK
-  HERE.
+  label categories must be supplied. For a full list of labels and label categories, see
+  Detecting labels.
 """
 function detect_labels(Image; aws_config::AbstractAWSConfig=global_aws_config())
     return rekognition(
@@ -1656,6 +1697,46 @@ function get_face_detection(
     return rekognition(
         "GetFaceDetection",
         Dict{String,Any}(mergewith(_merge, Dict{String,Any}("JobId" => JobId), params));
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    get_face_liveness_session_results(session_id)
+    get_face_liveness_session_results(session_id, params::Dict{String,<:Any})
+
+Retrieves the results of a specific Face Liveness session. It requires the sessionId as
+input, which was created using CreateFaceLivenessSession. Returns the corresponding Face
+Liveness confidence score, a reference image that includes a face bounding box, and audit
+images that also contain face bounding boxes. The Face Liveness confidence score ranges
+from 0 to 100. The reference image can optionally be returned.
+
+# Arguments
+- `session_id`: A unique 128-bit UUID. This is used to uniquely identify the session and
+  also acts as an idempotency token for all operations associated with the session.
+
+"""
+function get_face_liveness_session_results(
+    SessionId; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return rekognition(
+        "GetFaceLivenessSessionResults",
+        Dict{String,Any}("SessionId" => SessionId);
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function get_face_liveness_session_results(
+    SessionId,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return rekognition(
+        "GetFaceLivenessSessionResults",
+        Dict{String,Any}(
+            mergewith(_merge, Dict{String,Any}("SessionId" => SessionId), params)
+        );
         aws_config=aws_config,
         feature_set=SERVICE_FEATURE_SET,
     )
@@ -2276,7 +2357,8 @@ end
 
 Gets a list of the project policies attached to a project. To attach a project policy to a
 project, call PutProjectPolicy. To remove a project policy from a project, call
-DeleteProjectPolicy.
+DeleteProjectPolicy. This operation requires permissions to perform the
+rekognition:ListProjectPolicies action.
 
 # Arguments
 - `project_arn`: The ARN of the project for which you want to list the project policies.
@@ -2397,7 +2479,8 @@ project policy. You can attach multiple project policies to a project. You can a
 an existing project policy by specifying the policy revision ID of the existing policy. To
 remove a project policy from a project, call DeleteProjectPolicy. To get a list of project
 policies attached to a project, call ListProjectPolicies.  You copy a model version by
-calling CopyProjectVersion.
+calling CopyProjectVersion. This operation requires permissions to perform the
+rekognition:PutProjectPolicy action.
 
 # Arguments
 - `policy_document`: A resource policy to add to the model. The policy is a JSON structure
@@ -3233,7 +3316,8 @@ end
     stop_project_version(project_version_arn, params::Dict{String,<:Any})
 
 Stops a running model. The operation might take a while to complete. To check the current
-status, call DescribeProjectVersions.
+status, call DescribeProjectVersions.  This operation requires permissions to perform the
+rekognition:StopProjectVersion action.
 
 # Arguments
 - `project_version_arn`: The Amazon Resource Name (ARN) of the model version that you want

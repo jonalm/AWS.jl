@@ -10,31 +10,33 @@ using AWS.UUIDs
 
 Associates a web ACL with a regional application resource, to protect the resource. A
 regional application can be an Application Load Balancer (ALB), an Amazon API Gateway REST
-API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App Runner service.  For
+API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App Runner service.  For
 Amazon CloudFront, don't use this call. Instead, use your CloudFront distribution
 configuration. To associate a web ACL, in the CloudFront call UpdateDistribution, set the
 web ACL ID to the Amazon Resource Name (ARN) of the web ACL. For information, see
-UpdateDistribution. When you make changes to web ACLs or web ACL components, like rules and
-rule groups, WAF propagates the changes everywhere that the web ACL and its components are
-stored and used. Your changes are applied within seconds, but there might be a brief period
-of inconsistency when the changes have arrived in some places and not in others. So, for
-example, if you change a rule action setting, the action might be the old action in one
-area and the new action in another area. Or if you add an IP address to an IP set used in a
-blocking rule, the new address might briefly be blocked in one area while still allowed in
-another. This temporary inconsistency can occur when you first associate a web ACL with an
-Amazon Web Services resource and when you change a web ACL that is already associated with
-a resource. Generally, any inconsistencies of this type last only a few seconds.
+UpdateDistribution in the Amazon CloudFront Developer Guide.  When you make changes to web
+ACLs or web ACL components, like rules and rule groups, WAF propagates the changes
+everywhere that the web ACL and its components are stored and used. Your changes are
+applied within seconds, but there might be a brief period of inconsistency when the changes
+have arrived in some places and not in others. So, for example, if you change a rule action
+setting, the action might be the old action in one area and the new action in another area.
+Or if you add an IP address to an IP set used in a blocking rule, the new address might
+briefly be blocked in one area while still allowed in another. This temporary inconsistency
+can occur when you first associate a web ACL with an Amazon Web Services resource and when
+you change a web ACL that is already associated with a resource. Generally, any
+inconsistencies of this type last only a few seconds.
 
 # Arguments
 - `resource_arn`: The Amazon Resource Name (ARN) of the resource to associate with the web
   ACL.  The ARN must be in one of the following formats:   For an Application Load Balancer:
-  arn:aws:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/load-bala
-  ncer-id     For an Amazon API Gateway REST API:
-  arn:aws:apigateway:region::/restapis/api-id/stages/stage-name     For an AppSync GraphQL
-  API: arn:aws:appsync:region:account-id:apis/GraphQLApiId     For an Amazon Cognito user
-  pool: arn:aws:cognito-idp:region:account-id:userpool/user-pool-id     For an App Runner
-  service:
-  arn:aws:apprunner:region:account-id:service/apprunner-service-name/apprunner-service-id
+  arn:partition:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/loa
+  d-balancer-id     For an Amazon API Gateway REST API:
+  arn:partition:apigateway:region::/restapis/api-id/stages/stage-name     For an AppSync
+  GraphQL API: arn:partition:appsync:region:account-id:apis/GraphQLApiId     For an Amazon
+  Cognito user pool: arn:partition:cognito-idp:region:account-id:userpool/user-pool-id
+  For an App Runner service:
+  arn:partition:apprunner:region:account-id:service/apprunner-service-name/apprunner-service-i
+  d
 - `web_aclarn`: The Amazon Resource Name (ARN) of the web ACL that you want to associate
   with the resource.
 
@@ -80,13 +82,14 @@ are used to run your rules, rule groups, and web ACLs. WAF calculates capacity d
 for each rule type, to reflect the relative cost of each rule. Simple rules that cost
 little to run use fewer WCUs than more complex rules that use more processing power. Rule
 group capacity is fixed at creation, which helps users plan their web ACL WCU usage when
-they use a rule group. The WCU limit for web ACLs is 1,500.
+they use a rule group. For more information, see WAF web ACL capacity units (WCU) in the
+WAF Developer Guide.
 
 # Arguments
 - `rules`: An array of Rule that you're configuring to use in a rule group or web ACL.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -149,7 +152,7 @@ lists those IP addresses.
   it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -218,7 +221,7 @@ have WAF inspect a web request component for the specified patterns.
 - `regular_expression_list`: Array of regular expression strings.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -287,12 +290,13 @@ capacity requirements.
   calculates capacity differently for each rule type, to reflect the relative cost of each
   rule. Simple rules that cost little to run use fewer WCUs than more complex rules that use
   more processing power. Rule group capacity is fixed at creation, which helps users plan
-  their web ACL WCU usage when they use a rule group. The WCU limit for web ACLs is 1,500.
+  their web ACL WCU usage when they use a rule group. For more information, see WAF web ACL
+  capacity units (WCU) in the WAF Developer Guide.
 - `name`: The name of the rule group. You cannot change the name of a rule group after you
   create it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -372,8 +376,8 @@ default action to take (allow, block) for any request that does not match any of
 The rules in a web ACL can be a combination of the types Rule, RuleGroup, and managed rule
 group. You can associate a web ACL with one or more Amazon Web Services resources to
 protect. The resources can be an Amazon CloudFront distribution, an Amazon API Gateway REST
-API, an Application Load Balancer, an AppSync GraphQL API, Amazon Cognito user pool, or an
-App Runner service.
+API, an Application Load Balancer, an AppSync GraphQL API, an Amazon Cognito user pool, or
+an App Runner service.
 
 # Arguments
 - `default_action`: The action to perform if none of the Rules contained in the WebACL
@@ -382,7 +386,7 @@ App Runner service.
   it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -392,6 +396,12 @@ App Runner service.
 
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
+- `"AssociationConfig"`: Specifies custom configurations for the associations between the
+  web ACL and protected resources.  Use this to customize the maximum size of the request
+  body that your protected CloudFront distributions forward to WAF for inspection. The
+  default is 16 KB (16,384 kilobytes).   You are charged additional fees when your protected
+  resources forward body sizes that are larger than the default. For more information, see
+  WAF Pricing.
 - `"CaptchaConfig"`: Specifies how WAF should handle CAPTCHA evaluations for rules that
   don't have their own CaptchaConfig settings. If you don't specify this, WAF uses its
   default settings for CaptchaConfig.
@@ -535,7 +545,7 @@ Deletes the specified IPSet.
   it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -670,7 +680,7 @@ Deletes the specified RegexPatternSet.
 - `name`: The name of the set. You cannot change the name after you create the set.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -733,7 +743,7 @@ Deletes the specified RuleGroup.
   create it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -785,10 +795,11 @@ in the specified WebACL.   Before deleting any web ACL, first disassociate it fr
 resources.   To retrieve a list of the resources that are associated with a web ACL, use
 the following calls:   For regional resources, call ListResourcesForWebACL.   For Amazon
 CloudFront distributions, use the CloudFront call ListDistributionsByWebACLId. For
-information, see ListDistributionsByWebACLId.     To disassociate a resource from a web
-ACL, use the following calls:   For regional resources, call DisassociateWebACL.   For
-Amazon CloudFront distributions, provide an empty web ACL ID in the CloudFront call
-UpdateDistribution. For information, see UpdateDistribution.
+information, see ListDistributionsByWebACLId in the Amazon CloudFront API Reference.
+To disassociate a resource from a web ACL, use the following calls:   For regional
+resources, call DisassociateWebACL.   For Amazon CloudFront distributions, provide an empty
+web ACL ID in the CloudFront call UpdateDistribution. For information, see
+UpdateDistribution in the Amazon CloudFront API Reference.
 
 # Arguments
 - `id`: The unique identifier for the web ACL. This ID is returned in the responses to
@@ -804,7 +815,7 @@ UpdateDistribution. For information, see UpdateDistribution.
   it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -859,7 +870,7 @@ rules.
   identify the rule group.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -912,22 +923,24 @@ end
 Disassociates the specified regional application resource from any existing web ACL
 association. A resource can have at most one web ACL association. A regional application
 can be an Application Load Balancer (ALB), an Amazon API Gateway REST API, an AppSync
-GraphQL API, a Amazon Cognito user pool, or an App Runner service.  For Amazon CloudFront,
+GraphQL API, an Amazon Cognito user pool, or an App Runner service.  For Amazon CloudFront,
 don't use this call. Instead, use your CloudFront distribution configuration. To
 disassociate a web ACL, provide an empty web ACL ID in the CloudFront call
-UpdateDistribution. For information, see UpdateDistribution.
+UpdateDistribution. For information, see UpdateDistribution in the Amazon CloudFront API
+Reference.
 
 # Arguments
 - `resource_arn`: The Amazon Resource Name (ARN) of the resource to disassociate from the
   web ACL.  The ARN must be in one of the following formats:   For an Application Load
   Balancer:
-  arn:aws:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/load-bala
-  ncer-id     For an Amazon API Gateway REST API:
-  arn:aws:apigateway:region::/restapis/api-id/stages/stage-name     For an AppSync GraphQL
-  API: arn:aws:appsync:region:account-id:apis/GraphQLApiId     For an Amazon Cognito user
-  pool: arn:aws:cognito-idp:region:account-id:userpool/user-pool-id     For an App Runner
-  service:
-  arn:aws:apprunner:region:account-id:service/apprunner-service-name/apprunner-service-id
+  arn:partition:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/loa
+  d-balancer-id     For an Amazon API Gateway REST API:
+  arn:partition:apigateway:region::/restapis/api-id/stages/stage-name     For an AppSync
+  GraphQL API: arn:partition:appsync:region:account-id:apis/GraphQLApiId     For an Amazon
+  Cognito user pool: arn:partition:cognito-idp:region:account-id:userpool/user-pool-id
+  For an App Runner service:
+  arn:partition:apprunner:region:account-id:service/apprunner-service-name/apprunner-service-i
+  d
 
 """
 function disassociate_web_acl(
@@ -1014,7 +1027,7 @@ Retrieves the specified IPSet.
   it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1105,7 +1118,7 @@ UpdateManagedRuleSetVersionExpiryDate.
   your customers can access and use.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1250,7 +1263,7 @@ independent of your first.
   rule group reference statement in the request parameter RuleGroupRuleName.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1319,7 +1332,7 @@ Retrieves the specified RegexPatternSet.
 - `name`: The name of the set. You cannot change the name after you create the set.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1372,7 +1385,7 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
   you create it.
 - `"Scope"`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1411,7 +1424,7 @@ the actual period during which WAF selected the requests in the sample.
   you want a sample of requests.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1489,7 +1502,7 @@ Retrieves the specified WebACL.
   it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1535,13 +1548,14 @@ Retrieves the WebACL for the specified resource.
 - `resource_arn`: The Amazon Resource Name (ARN) of the resource whose web ACL you want to
   retrieve.  The ARN must be in one of the following formats:   For an Application Load
   Balancer:
-  arn:aws:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/load-bala
-  ncer-id     For an Amazon API Gateway REST API:
-  arn:aws:apigateway:region::/restapis/api-id/stages/stage-name     For an AppSync GraphQL
-  API: arn:aws:appsync:region:account-id:apis/GraphQLApiId     For an Amazon Cognito user
-  pool: arn:aws:cognito-idp:region:account-id:userpool/user-pool-id     For an App Runner
-  service:
-  arn:aws:apprunner:region:account-id:service/apprunner-service-name/apprunner-service-id
+  arn:partition:elasticloadbalancing:region:account-id:loadbalancer/app/load-balancer-name/loa
+  d-balancer-id     For an Amazon API Gateway REST API:
+  arn:partition:apigateway:region::/restapis/api-id/stages/stage-name     For an AppSync
+  GraphQL API: arn:partition:appsync:region:account-id:apis/GraphQLApiId     For an Amazon
+  Cognito user pool: arn:partition:cognito-idp:region:account-id:userpool/user-pool-id
+  For an App Runner service:
+  arn:partition:apprunner:region:account-id:service/apprunner-service-name/apprunner-service-i
+  d
 
 """
 function get_web_aclfor_resource(
@@ -1580,7 +1594,7 @@ Returns a list of the available versions for the specified managed rule group.
   identify the rule group.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1642,7 +1656,7 @@ Services Marketplace managed rule groups that you're subscribed to.
 # Arguments
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1688,7 +1702,7 @@ Retrieves an array of IPSetSummary objects for the IP sets that you manage.
 # Arguments
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1732,7 +1746,7 @@ Retrieves an array of your LoggingConfiguration objects.
 # Arguments
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1783,7 +1797,7 @@ UpdateManagedRuleSetVersionExpiryDate.
 # Arguments
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1876,7 +1890,7 @@ manage.
 # Arguments
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -1926,7 +1940,7 @@ use the CloudFront call ListDistributionsByWebACLId.
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
 - `"ResourceType"`: Used for web ACLs that are scoped for regional applications. A regional
   application can be an Application Load Balancer (ALB), an Amazon API Gateway REST API, an
-  AppSync GraphQL API, a Amazon Cognito user pool, or an App Runner service.   If you don't
+  AppSync GraphQL API, an Amazon Cognito user pool, or an App Runner service.   If you don't
   provide a resource type, the call uses the resource type APPLICATION_LOAD_BALANCER.
   Default: APPLICATION_LOAD_BALANCER
 """
@@ -1964,7 +1978,7 @@ Retrieves an array of RuleGroupSummary objects for the rule groups that you mana
 # Arguments
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -2058,7 +2072,7 @@ Retrieves an array of WebACLSummary objects for the web ACLs that you manage.
 # Arguments
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -2185,7 +2199,7 @@ UpdateManagedRuleSetVersionExpiryDate.
   your customers can access and use.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -2248,12 +2262,11 @@ owner of the rule group.
 # Arguments
 - `policy`: The policy to attach to the specified rule group.  The policy specifications
   must conform to the following:   The policy must be composed using IAM Policy version
-  2012-10-17 or version 2015-01-01.   The policy must include specifications for Effect,
-  Action, and Principal.    Effect must specify Allow.    Action must specify
-  wafv2:CreateWebACL, wafv2:UpdateWebACL, and wafv2:PutFirewallManagerRuleGroups and may
-  optionally specify wafv2:GetRuleGroup. WAF rejects any extra actions or wildcard actions in
-  the policy.   The policy must not include a Resource parameter.   For more information, see
-  IAM Policies.
+  2012-10-17.   The policy must include specifications for Effect, Action, and Principal.
+  Effect must specify Allow.    Action must specify wafv2:CreateWebACL, wafv2:UpdateWebACL,
+  and wafv2:PutFirewallManagerRuleGroups and may optionally specify wafv2:GetRuleGroup. WAF
+  rejects any extra actions or wildcard actions in the policy.   The policy must not include
+  a Resource parameter.   For more information, see IAM Policies.
 - `resource_arn`: The Amazon Resource Name (ARN) of the RuleGroup to which you want to
   attach the policy.
 
@@ -2427,7 +2440,7 @@ Generally, any inconsistencies of this type last only a few seconds.
   it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -2513,7 +2526,7 @@ PutManagedRuleSetVersions, and UpdateManagedRuleSetVersionExpiryDate.
   your customers can access and use.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -2610,7 +2623,7 @@ last only a few seconds.
 - `regular_expression_list`:
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -2707,7 +2720,7 @@ others to reuse the rule group with confidence in its capacity requirements.
   create it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -2805,7 +2818,7 @@ block) for any request that does not match any of the rules. The rules in a web 
 a combination of the types Rule, RuleGroup, and managed rule group. You can associate a web
 ACL with one or more Amazon Web Services resources to protect. The resources can be an
 Amazon CloudFront distribution, an Amazon API Gateway REST API, an Application Load
-Balancer, an AppSync GraphQL API, Amazon Cognito user pool, or an App Runner service.
+Balancer, an AppSync GraphQL API, an Amazon Cognito user pool, or an App Runner service.
 
 # Arguments
 - `default_action`: The action to perform if none of the Rules contained in the WebACL
@@ -2823,7 +2836,7 @@ Balancer, an AppSync GraphQL API, Amazon Cognito user pool, or an App Runner ser
   it.
 - `scope`: Specifies whether this is for an Amazon CloudFront distribution or for a
   regional application. A regional application can be an Application Load Balancer (ALB), an
-  Amazon API Gateway REST API, an AppSync GraphQL API, a Amazon Cognito user pool, or an App
+  Amazon API Gateway REST API, an AppSync GraphQL API, an Amazon Cognito user pool, or an App
   Runner service.  To work with CloudFront, you must also specify the Region US East (N.
   Virginia) as follows:    CLI - Specify the Region when you use the CloudFront scope:
   --scope=CLOUDFRONT --region=us-east-1.    API and SDKs - For all calls, use the Region
@@ -2833,6 +2846,12 @@ Balancer, an AppSync GraphQL API, Amazon Cognito user pool, or an App Runner ser
 
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
+- `"AssociationConfig"`: Specifies custom configurations for the associations between the
+  web ACL and protected resources.  Use this to customize the maximum size of the request
+  body that your protected CloudFront distributions forward to WAF for inspection. The
+  default is 16 KB (16,384 kilobytes).   You are charged additional fees when your protected
+  resources forward body sizes that are larger than the default. For more information, see
+  WAF Pricing.
 - `"CaptchaConfig"`: Specifies how WAF should handle CAPTCHA evaluations for rules that
   don't have their own CaptchaConfig settings. If you don't specify this, WAF uses its
   default settings for CaptchaConfig.

@@ -367,6 +367,7 @@ const iotthingsgraph = AWS.JSONService(
 )
 const iottwinmaker = AWS.RestJSONService("iottwinmaker", "iottwinmaker", "2021-11-29")
 const ivs = AWS.RestJSONService("ivs", "ivs", "2020-07-14")
+const ivs_realtime = AWS.RestJSONService("ivs", "ivsrealtime", "2020-07-14")
 const ivschat = AWS.RestJSONService("ivschat", "ivschat", "2020-07-14")
 const kafka = AWS.RestJSONService("kafka", "kafka", "2018-11-14")
 const kafkaconnect = AWS.RestJSONService("kafkaconnect", "kafkaconnect", "2021-09-14")
@@ -715,6 +716,7 @@ const translate = AWS.JSONService(
     "translate", "translate", "2017-07-01", "1.1", "AWSShineFrontendService_20170701"
 )
 const voice_id = AWS.JSONService("voiceid", "voiceid", "2021-09-27", "1.0", "VoiceID")
+const vpc_lattice = AWS.RestJSONService("vpc-lattice", "vpc-lattice", "2022-11-30")
 const waf = AWS.JSONService("waf", "waf", "2015-08-24", "1.1", "AWSWAF_20150824")
 const waf_regional = AWS.JSONService(
     "waf-regional", "waf-regional", "2016-11-28", "1.1", "AWSWAF_Regional_20161128"

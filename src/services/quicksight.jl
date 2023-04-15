@@ -899,6 +899,48 @@ function create_namespace(
 end
 
 """
+    create_refresh_schedule(aws_account_id, data_set_id, schedule)
+    create_refresh_schedule(aws_account_id, data_set_id, schedule, params::Dict{String,<:Any})
+
+Creates a refresh schedule for a dataset. You can create up to 5 different schedules for a
+single dataset.
+
+# Arguments
+- `aws_account_id`: The Amazon Web Services account ID.
+- `data_set_id`: The ID of the dataset.
+- `schedule`: The refresh schedule.
+
+"""
+function create_refresh_schedule(
+    AwsAccountId, DataSetId, Schedule; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return quicksight(
+        "POST",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules",
+        Dict{String,Any}("Schedule" => Schedule);
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function create_refresh_schedule(
+    AwsAccountId,
+    DataSetId,
+    Schedule,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "POST",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules",
+        Dict{String,Any}(
+            mergewith(_merge, Dict{String,Any}("Schedule" => Schedule), params)
+        );
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
     create_template(aws_account_id, template_id)
     create_template(aws_account_id, template_id, params::Dict{String,<:Any})
 
@@ -1359,6 +1401,42 @@ function delete_data_set(
 end
 
 """
+    delete_data_set_refresh_properties(aws_account_id, data_set_id)
+    delete_data_set_refresh_properties(aws_account_id, data_set_id, params::Dict{String,<:Any})
+
+Deletes the dataset refresh properties of the dataset.
+
+# Arguments
+- `aws_account_id`: The Amazon Web Services account ID.
+- `data_set_id`: The ID of the dataset.
+
+"""
+function delete_data_set_refresh_properties(
+    AwsAccountId, DataSetId; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return quicksight(
+        "DELETE",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-properties";
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function delete_data_set_refresh_properties(
+    AwsAccountId,
+    DataSetId,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "DELETE",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-properties",
+        params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
     delete_data_source(aws_account_id, data_source_id)
     delete_data_source(aws_account_id, data_source_id, params::Dict{String,<:Any})
 
@@ -1639,6 +1717,44 @@ function delete_namespace(
     return quicksight(
         "DELETE",
         "/accounts/$(AwsAccountId)/namespaces/$(Namespace)",
+        params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    delete_refresh_schedule(aws_account_id, data_set_id, schedule_id)
+    delete_refresh_schedule(aws_account_id, data_set_id, schedule_id, params::Dict{String,<:Any})
+
+Deletes a refresh schedule from a dataset.
+
+# Arguments
+- `aws_account_id`: The Amazon Web Services account ID.
+- `data_set_id`: The ID of the dataset.
+- `schedule_id`: The ID of the refresh schedule.
+
+"""
+function delete_refresh_schedule(
+    AwsAccountId, DataSetId, ScheduleId; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return quicksight(
+        "DELETE",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules/$(ScheduleId)";
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function delete_refresh_schedule(
+    AwsAccountId,
+    DataSetId,
+    ScheduleId,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "DELETE",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules/$(ScheduleId)",
         params;
         aws_config=aws_config,
         feature_set=SERVICE_FEATURE_SET,
@@ -2355,6 +2471,42 @@ function describe_data_set_permissions(
 end
 
 """
+    describe_data_set_refresh_properties(aws_account_id, data_set_id)
+    describe_data_set_refresh_properties(aws_account_id, data_set_id, params::Dict{String,<:Any})
+
+Describes the refresh properties of a dataset.
+
+# Arguments
+- `aws_account_id`: The Amazon Web Services account ID.
+- `data_set_id`: The ID of the dataset.
+
+"""
+function describe_data_set_refresh_properties(
+    AwsAccountId, DataSetId; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return quicksight(
+        "GET",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-properties";
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function describe_data_set_refresh_properties(
+    AwsAccountId,
+    DataSetId,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "GET",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-properties",
+        params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
     describe_data_source(aws_account_id, data_source_id)
     describe_data_source(aws_account_id, data_source_id, params::Dict{String,<:Any})
 
@@ -2770,6 +2922,44 @@ function describe_namespace(
     return quicksight(
         "GET",
         "/accounts/$(AwsAccountId)/namespaces/$(Namespace)",
+        params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    describe_refresh_schedule(aws_account_id, data_set_id, schedule_id)
+    describe_refresh_schedule(aws_account_id, data_set_id, schedule_id, params::Dict{String,<:Any})
+
+Provides a summary of a refresh schedule.
+
+# Arguments
+- `aws_account_id`: The Amazon Web Services account ID.
+- `data_set_id`: The ID of the dataset.
+- `schedule_id`: The ID of the refresh schedule.
+
+"""
+function describe_refresh_schedule(
+    AwsAccountId, DataSetId, ScheduleId; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return quicksight(
+        "GET",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules/$(ScheduleId)";
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function describe_refresh_schedule(
+    AwsAccountId,
+    DataSetId,
+    ScheduleId,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "GET",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules/$(ScheduleId)",
         params;
         aws_config=aws_config,
         feature_set=SERVICE_FEATURE_SET,
@@ -3952,6 +4142,42 @@ function list_namespaces(
 end
 
 """
+    list_refresh_schedules(aws_account_id, data_set_id)
+    list_refresh_schedules(aws_account_id, data_set_id, params::Dict{String,<:Any})
+
+Lists the refresh schedules of a dataset. Each dataset can have up to 5 schedules.
+
+# Arguments
+- `aws_account_id`: The Amazon Web Services account ID.
+- `data_set_id`: The ID of the dataset.
+
+"""
+function list_refresh_schedules(
+    AwsAccountId, DataSetId; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return quicksight(
+        "GET",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules";
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function list_refresh_schedules(
+    AwsAccountId,
+    DataSetId,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "GET",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules",
+        params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
     list_tags_for_resource(resource_arn)
     list_tags_for_resource(resource_arn, params::Dict{String,<:Any})
 
@@ -4314,6 +4540,54 @@ function list_users(
         "GET",
         "/accounts/$(AwsAccountId)/namespaces/$(Namespace)/users",
         params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    put_data_set_refresh_properties(aws_account_id, data_set_id, data_set_refresh_properties)
+    put_data_set_refresh_properties(aws_account_id, data_set_id, data_set_refresh_properties, params::Dict{String,<:Any})
+
+Creates or updates the dataset refresh properties for the dataset.
+
+# Arguments
+- `aws_account_id`: The Amazon Web Services account ID.
+- `data_set_id`: The ID of the dataset.
+- `data_set_refresh_properties`: The dataset refresh properties.
+
+"""
+function put_data_set_refresh_properties(
+    AwsAccountId,
+    DataSetId,
+    DataSetRefreshProperties;
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "PUT",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-properties",
+        Dict{String,Any}("DataSetRefreshProperties" => DataSetRefreshProperties);
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function put_data_set_refresh_properties(
+    AwsAccountId,
+    DataSetId,
+    DataSetRefreshProperties,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "PUT",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-properties",
+        Dict{String,Any}(
+            mergewith(
+                _merge,
+                Dict{String,Any}("DataSetRefreshProperties" => DataSetRefreshProperties),
+                params,
+            ),
+        );
         aws_config=aws_config,
         feature_set=SERVICE_FEATURE_SET,
     )
@@ -5657,6 +5931,47 @@ function update_public_sharing_settings(
         "PUT",
         "/accounts/$(AwsAccountId)/public-sharing-settings",
         params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    update_refresh_schedule(aws_account_id, data_set_id, schedule)
+    update_refresh_schedule(aws_account_id, data_set_id, schedule, params::Dict{String,<:Any})
+
+Updates a refresh schedule for a dataset.
+
+# Arguments
+- `aws_account_id`: The Amazon Web Services account ID.
+- `data_set_id`: The ID of the dataset.
+- `schedule`: The refresh schedule.
+
+"""
+function update_refresh_schedule(
+    AwsAccountId, DataSetId, Schedule; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return quicksight(
+        "PUT",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules",
+        Dict{String,Any}("Schedule" => Schedule);
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function update_refresh_schedule(
+    AwsAccountId,
+    DataSetId,
+    Schedule,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return quicksight(
+        "PUT",
+        "/accounts/$(AwsAccountId)/data-sets/$(DataSetId)/refresh-schedules",
+        Dict{String,Any}(
+            mergewith(_merge, Dict{String,Any}("Schedule" => Schedule), params)
+        );
         aws_config=aws_config,
         feature_set=SERVICE_FEATURE_SET,
     )

@@ -77,6 +77,8 @@ Creates a new ReplicationConfigurationTemplate.
 
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
+- `"autoReplicateNewDisks"`: Whether to allow the AWS replication agent to automatically
+  replicate newly added disks.
 - `"ebsEncryptionKeyArn"`: The ARN of the EBS encryption key to be used during replication.
 - `"tags"`: A set of tags to be associated with the Replication Configuration Template
   resource.
@@ -876,10 +878,10 @@ end
     retry_data_replication(source_server_id)
     retry_data_replication(source_server_id, params::Dict{String,<:Any})
 
-Causes the data replication initiation sequence to begin immediately upon next Handshake
-for the specified Source Server ID, regardless of when the previous initiation started.
-This command will work only if the Source Server is stalled or is in a DISCONNECTED or
-STOPPED state.
+WARNING: RetryDataReplication is deprecated. Causes the data replication initiation
+sequence to begin immediately upon next Handshake for the specified Source Server ID,
+regardless of when the previous initiation started. This command will work only if the
+Source Server is stalled or is in a DISCONNECTED or STOPPED state.
 
 # Arguments
 - `source_server_id`: The ID of the Source Server whose data replication should be retried.
@@ -1385,6 +1387,8 @@ Allows you to update a ReplicationConfiguration by Source Server ID.
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
 - `"associateDefaultSecurityGroup"`: Whether to associate the default Elastic Disaster
   Recovery Security group with the Replication Configuration.
+- `"autoReplicateNewDisks"`: Whether to allow the AWS replication agent to automatically
+  replicate newly added disks.
 - `"bandwidthThrottling"`: Configure bandwidth throttling for the outbound data transfer
   rate of the Source Server in Mbps.
 - `"createPublicIP"`: Whether to create a Public IP for the Recovery Instance by default.
@@ -1448,6 +1452,8 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"arn"`: The Replication Configuration Template ARN.
 - `"associateDefaultSecurityGroup"`: Whether to associate the default Elastic Disaster
   Recovery Security group with the Replication Configuration Template.
+- `"autoReplicateNewDisks"`: Whether to allow the AWS replication agent to automatically
+  replicate newly added disks.
 - `"bandwidthThrottling"`: Configure bandwidth throttling for the outbound data transfer
   rate of the Source Server in Mbps.
 - `"createPublicIP"`: Whether to create a Public IP for the Recovery Instance by default.

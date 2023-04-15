@@ -691,12 +691,14 @@ end
     decline_invitations(account_ids)
     decline_invitations(account_ids, params::Dict{String,<:Any})
 
-Declines invitations to become a member account. This operation is only used by accounts
-that are not part of an organization. Organization accounts do not receive invitations.
+Declines invitations to become a member account. A prospective member account uses this
+operation to decline an invitation to become a member. This operation is only called by
+member accounts that aren't part of an organization. Organization accounts don't receive
+invitations.
 
 # Arguments
-- `account_ids`: The list of account IDs for the accounts from which to decline the
-  invitations to Security Hub.
+- `account_ids`: The list of prospective member account IDs for which to decline an
+  invitation.
 
 """
 function decline_invitations(AccountIds; aws_config::AbstractAWSConfig=global_aws_config())
@@ -835,11 +837,14 @@ end
     delete_invitations(account_ids, params::Dict{String,<:Any})
 
 Deletes invitations received by the Amazon Web Services account to become a member account.
-This operation is only used by accounts that are not part of an organization. Organization
-accounts do not receive invitations.
+A Security Hub administrator account can use this operation to delete invitations sent to
+one or more member accounts. This operation is only used to delete invitations that are
+sent to member accounts that aren't part of an organization. Organization accounts don't
+receive invitations.
 
 # Arguments
-- `account_ids`: The list of the account IDs that sent the invitations to delete.
+- `account_ids`: The list of member account IDs that received the invitations you want to
+  delete.
 
 """
 function delete_invitations(AccountIds; aws_config::AbstractAWSConfig=global_aws_config())
@@ -1412,7 +1417,7 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
   control check when the check applies to multiple enabled standards. The value for this
   field in a member account matches the value in the administrator account. For accounts that
   aren't part of an organization, the default value of this field is SECURITY_CONTROL if you
-  enabled Security Hub on or after February 9, 2023.
+  enabled Security Hub on or after February 23, 2023.
 - `"EnableDefaultStandards"`: Whether to enable the security standards that Security Hub
   has designated as automatically enabled. If you do not provide a value for
   EnableDefaultStandards, it is set to true. To not enable the automatically enabled

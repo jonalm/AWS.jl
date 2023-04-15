@@ -501,16 +501,17 @@ end
     create_auto_mljob(auto_mljob_name, input_data_config, output_data_config, role_arn, params::Dict{String,<:Any})
 
 Creates an Autopilot job. Find the best-performing model after you run an Autopilot job by
-calling . For information about how to use Autopilot, see Automate Model Development with
-Amazon SageMaker Autopilot.
+calling DescribeAutoMLJob. For information about how to use Autopilot, see Automate Model
+Development with Amazon SageMaker Autopilot.
 
 # Arguments
 - `auto_mljob_name`: Identifies an Autopilot job. The name must be unique to your account
   and is case insensitive.
 - `input_data_config`: An array of channel objects that describes the input data and its
-  location. Each channel is a named input source. Similar to InputDataConfig supported by .
-  Format(s) supported: CSV, Parquet. A minimum of 500 rows is required for the training
-  dataset. There is not a minimum number of rows required for the validation dataset.
+  location. Each channel is a named input source. Similar to InputDataConfig supported by
+  HyperParameterTrainingJobDefinition. Format(s) supported: CSV, Parquet. A minimum of 500
+  rows is required for the training dataset. There is not a minimum number of rows required
+  for the validation dataset.
 - `output_data_config`: Provides information about encryption and the Amazon S3 output path
   needed to store artifacts from an AutoML job. Format(s) supported: CSV.
 - `role_arn`: The ARN of the role that is used to access the data.
@@ -520,15 +521,17 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"AutoMLJobConfig"`: A collection of settings used to configure an AutoML job.
 - `"AutoMLJobObjective"`: Defines the objective metric used to measure the predictive
   quality of an AutoML job. You provide an AutoMLJobObjectiveMetricName and Autopilot infers
-  whether to minimize or maximize it.
+  whether to minimize or maximize it. For CreateAutoMLJobV2, only Accuracy is supported.
 - `"GenerateCandidateDefinitionsOnly"`: Generates possible candidates without training the
   models. A candidate is a combination of data preprocessors, algorithms, and algorithm
   parameter settings.
 - `"ModelDeployConfig"`: Specifies how to generate the endpoint name for an automatic
   one-click Autopilot model deployment.
-- `"ProblemType"`: Defines the type of supervised learning available for the candidates.
-  For more information, see  Amazon SageMaker Autopilot problem types and algorithm support.
-- `"Tags"`: Each tag consists of a key and an optional value. Tag keys must be unique per
+- `"ProblemType"`: Defines the type of supervised learning problem available for the
+  candidates. For more information, see  Amazon SageMaker Autopilot problem types.
+- `"Tags"`: An array of key-value pairs. You can use tags to categorize your Amazon Web
+  Services resources in different ways, for example, by purpose, owner, or environment. For
+  more information, see Tagging Amazon Web ServicesResources. Tag keys must be unique per
   resource.
 """
 function create_auto_mljob(
@@ -566,6 +569,98 @@ function create_auto_mljob(
                 Dict{String,Any}(
                     "AutoMLJobName" => AutoMLJobName,
                     "InputDataConfig" => InputDataConfig,
+                    "OutputDataConfig" => OutputDataConfig,
+                    "RoleArn" => RoleArn,
+                ),
+                params,
+            ),
+        );
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    create_auto_mljob_v2(auto_mljob_input_data_config, auto_mljob_name, auto_mlproblem_type_config, output_data_config, role_arn)
+    create_auto_mljob_v2(auto_mljob_input_data_config, auto_mljob_name, auto_mlproblem_type_config, output_data_config, role_arn, params::Dict{String,<:Any})
+
+Creates an Amazon SageMaker AutoML job that uses non-tabular data such as images or text
+for Computer Vision or Natural Language Processing problems. Find the resulting model after
+you run an AutoML job V2 by calling DescribeAutoMLJobV2. To create an AutoMLJob using
+tabular data, see CreateAutoMLJob.  This API action is callable through SageMaker Canvas
+only. Calling it directly from the CLI or an SDK results in an error.
+
+# Arguments
+- `auto_mljob_input_data_config`: An array of channel objects describing the input data and
+  their location. Each channel is a named input source. Similar to InputDataConfig supported
+  by CreateAutoMLJob. The supported formats depend on the problem type:
+  ImageClassification: S3Prefix, ManifestFile, AugmentedManifestFile    TextClassification:
+  S3Prefix
+- `auto_mljob_name`: Identifies an Autopilot job. The name must be unique to your account
+  and is case insensitive.
+- `auto_mlproblem_type_config`: Defines the configuration settings of one of the supported
+  problem types.
+- `output_data_config`: Provides information about encryption and the Amazon S3 output path
+  needed to store artifacts from an AutoML job.
+- `role_arn`: The ARN of the role that is used to access the data.
+
+# Optional Parameters
+Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
+- `"AutoMLJobObjective"`: Specifies a metric to minimize or maximize as the objective of a
+  job. For CreateAutoMLJobV2, only Accuracy is supported.
+- `"DataSplitConfig"`: This structure specifies how to split the data into train and
+  validation datasets. If you are using the V1 API (for example CreateAutoMLJob) or the V2
+  API for Natural Language Processing problems (for example CreateAutoMLJobV2 with a
+  TextClassificationJobConfig problem type), the validation and training datasets must
+  contain the same headers. Also, for V1 API jobs, the validation dataset must be less than 2
+  GB in size.
+- `"ModelDeployConfig"`: Specifies how to generate the endpoint name for an automatic
+  one-click Autopilot model deployment.
+- `"SecurityConfig"`: The security configuration for traffic encryption or Amazon VPC
+  settings.
+- `"Tags"`: An array of key-value pairs. You can use tags to categorize your Amazon Web
+  Services resources in different ways, such as by purpose, owner, or environment. For more
+  information, see Tagging Amazon Web ServicesResources. Tag keys must be unique per resource.
+"""
+function create_auto_mljob_v2(
+    AutoMLJobInputDataConfig,
+    AutoMLJobName,
+    AutoMLProblemTypeConfig,
+    OutputDataConfig,
+    RoleArn;
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return sagemaker(
+        "CreateAutoMLJobV2",
+        Dict{String,Any}(
+            "AutoMLJobInputDataConfig" => AutoMLJobInputDataConfig,
+            "AutoMLJobName" => AutoMLJobName,
+            "AutoMLProblemTypeConfig" => AutoMLProblemTypeConfig,
+            "OutputDataConfig" => OutputDataConfig,
+            "RoleArn" => RoleArn,
+        );
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function create_auto_mljob_v2(
+    AutoMLJobInputDataConfig,
+    AutoMLJobName,
+    AutoMLProblemTypeConfig,
+    OutputDataConfig,
+    RoleArn,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return sagemaker(
+        "CreateAutoMLJobV2",
+        Dict{String,Any}(
+            mergewith(
+                _merge,
+                Dict{String,Any}(
+                    "AutoMLJobInputDataConfig" => AutoMLJobInputDataConfig,
+                    "AutoMLJobName" => AutoMLJobName,
+                    "AutoMLProblemTypeConfig" => AutoMLProblemTypeConfig,
                     "OutputDataConfig" => OutputDataConfig,
                     "RoleArn" => RoleArn,
                 ),
@@ -6169,6 +6264,43 @@ function describe_auto_mljob(
 )
     return sagemaker(
         "DescribeAutoMLJob",
+        Dict{String,Any}(
+            mergewith(_merge, Dict{String,Any}("AutoMLJobName" => AutoMLJobName), params)
+        );
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    describe_auto_mljob_v2(auto_mljob_name)
+    describe_auto_mljob_v2(auto_mljob_name, params::Dict{String,<:Any})
+
+Returns information about an Amazon SageMaker AutoML V2 job.  This API action is callable
+through SageMaker Canvas only. Calling it directly from the CLI or an SDK results in an
+error.
+
+# Arguments
+- `auto_mljob_name`: Requests information about an AutoML V2 job using its unique name.
+
+"""
+function describe_auto_mljob_v2(
+    AutoMLJobName; aws_config::AbstractAWSConfig=global_aws_config()
+)
+    return sagemaker(
+        "DescribeAutoMLJobV2",
+        Dict{String,Any}("AutoMLJobName" => AutoMLJobName);
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function describe_auto_mljob_v2(
+    AutoMLJobName,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return sagemaker(
+        "DescribeAutoMLJobV2",
         Dict{String,Any}(
             mergewith(_merge, Dict{String,Any}("AutoMLJobName" => AutoMLJobName), params)
         );

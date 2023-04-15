@@ -500,7 +500,8 @@ end
 
 Allocate a CIDR from an IPAM pool. In IPAM, an allocation is a CIDR assignment from an IPAM
 pool to another IPAM pool or to a resource. For more information, see Allocate CIDRs in the
-Amazon VPC IPAM User Guide.
+Amazon VPC IPAM User Guide.  This action creates an allocation with strong consistency. The
+returned CIDR will not overlap with any other allocations from the same pool.
 
 # Arguments
 - `ipam_pool_id`: The ID of the IPAM pool from which you would like to allocate a CIDR.
@@ -5159,46 +5160,45 @@ function create_network_insights_access_scope(
 end
 
 """
-    create_network_insights_path(client_token, destination, protocol, source)
-    create_network_insights_path(client_token, destination, protocol, source, params::Dict{String,<:Any})
+    create_network_insights_path(client_token, protocol, source)
+    create_network_insights_path(client_token, protocol, source, params::Dict{String,<:Any})
 
 Creates a path to analyze for reachability. Reachability Analyzer enables you to analyze
 and debug network reachability between two resources in your virtual private cloud (VPC).
-For more information, see What is Reachability Analyzer.
+For more information, see the Reachability Analyzer Guide.
 
 # Arguments
 - `client_token`: Unique, case-sensitive identifier that you provide to ensure the
   idempotency of the request. For more information, see How to ensure idempotency.
-- `destination`: The Amazon Web Services resource that is the destination of the path.
 - `protocol`: The protocol.
-- `source`: The Amazon Web Services resource that is the source of the path.
+- `source`: The ID or ARN of the source. If the resource is in another account, you must
+  specify an ARN.
 
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
-- `"DestinationIp"`: The IP address of the Amazon Web Services resource that is the
-  destination of the path.
+- `"Destination"`: The ID or ARN of the destination. If the resource is in another account,
+  you must specify an ARN.
+- `"DestinationIp"`: The IP address of the destination.
 - `"DestinationPort"`: The destination port.
 - `"DryRun"`: Checks whether you have the required permissions for the action, without
   actually making the request, and provides an error response. If you have the required
   permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
-- `"SourceIp"`: The IP address of the Amazon Web Services resource that is the source of
-  the path.
+- `"FilterAtDestination"`: Scopes the analysis to network paths that match specific filters
+  at the destination. If you specify this parameter, you can't specify the parameter for the
+  destination IP address.
+- `"FilterAtSource"`: Scopes the analysis to network paths that match specific filters at
+  the source. If you specify this parameter, you can't specify the parameters for the source
+  IP address or the destination port.
+- `"SourceIp"`: The IP address of the source.
 - `"TagSpecification"`: The tags to add to the path.
 """
 function create_network_insights_path(
-    ClientToken,
-    Destination,
-    Protocol,
-    Source;
-    aws_config::AbstractAWSConfig=global_aws_config(),
+    ClientToken, Protocol, Source; aws_config::AbstractAWSConfig=global_aws_config()
 )
     return ec2(
         "CreateNetworkInsightsPath",
         Dict{String,Any}(
-            "ClientToken" => ClientToken,
-            "Destination" => Destination,
-            "Protocol" => Protocol,
-            "Source" => Source,
+            "ClientToken" => ClientToken, "Protocol" => Protocol, "Source" => Source
         );
         aws_config=aws_config,
         feature_set=SERVICE_FEATURE_SET,
@@ -5206,7 +5206,6 @@ function create_network_insights_path(
 end
 function create_network_insights_path(
     ClientToken,
-    Destination,
     Protocol,
     Source,
     params::AbstractDict{String};
@@ -5218,10 +5217,7 @@ function create_network_insights_path(
             mergewith(
                 _merge,
                 Dict{String,Any}(
-                    "ClientToken" => ClientToken,
-                    "Destination" => Destination,
-                    "Protocol" => Protocol,
-                    "Source" => Source,
+                    "ClientToken" => ClientToken, "Protocol" => Protocol, "Source" => Source
                 ),
                 params,
             ),
@@ -5787,9 +5783,9 @@ EC2-Classic to a VPC. For more information, see Migrate from EC2-Classic to a VP
 Amazon Elastic Compute Cloud User Guide.
 
 # Arguments
-- `group_description`: A description for the security group. This is informational only.
-  Constraints: Up to 255 characters in length Constraints for EC2-Classic: ASCII characters
-  Constraints for EC2-VPC: a-z, A-Z, 0-9, spaces, and ._-:/()#,@[]+=&amp;;{}!*
+- `group_description`: A description for the security group. Constraints: Up to 255
+  characters in length Constraints for EC2-Classic: ASCII characters Constraints for EC2-VPC:
+  a-z, A-Z, 0-9, spaces, and ._-:/()#,@[]+=&amp;;{}!*
 - `group_name`: The name of the security group. Constraints: Up to 255 characters in
   length. Cannot start with sg-. Constraints for EC2-Classic: ASCII characters Constraints
   for EC2-VPC: a-z, A-Z, 0-9, spaces, and ._-:/()#,@[]+=&amp;;{}!*
@@ -5853,14 +5849,14 @@ on the volume long enough to take a snapshot, your snapshot should be complete. 
 you cannot pause all file writes to the volume, you should unmount the volume from within
 the instance, issue the snapshot command, and then remount the volume to ensure a
 consistent and complete snapshot. You may remount and use your volume while the snapshot
-status is pending. To create a snapshot for Amazon EBS volumes that serve as root devices,
-you should stop the instance before taking the snapshot. Snapshots that are taken from
-encrypted volumes are automatically encrypted. Volumes that are created from encrypted
-snapshots are also automatically encrypted. Your encrypted volumes and any associated
-snapshots always remain protected. You can tag your snapshots during creation. For more
-information, see Tag your Amazon EC2 resources in the Amazon Elastic Compute Cloud User
-Guide. For more information, see Amazon Elastic Block Store and Amazon EBS encryption in
-the Amazon Elastic Compute Cloud User Guide.
+status is pending. When you create a snapshot for an EBS volume that serves as a root
+device, we recommend that you stop the instance before taking the snapshot. Snapshots that
+are taken from encrypted volumes are automatically encrypted. Volumes that are created from
+encrypted snapshots are also automatically encrypted. Your encrypted volumes and any
+associated snapshots always remain protected. You can tag your snapshots during creation.
+For more information, see Tag your Amazon EC2 resources in the Amazon Elastic Compute Cloud
+User Guide. For more information, see Amazon Elastic Block Store and Amazon EBS encryption
+in the Amazon Elastic Compute Cloud User Guide.
 
 # Arguments
 - `volume_id`: The ID of the Amazon EBS volume.
@@ -14940,8 +14936,15 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
   actually making the request, and provides an error response. If you have the required
   permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
 - `"Filter"`: The filters. The following are the possible values:   destination - The ID of
-  the resource.   destination-port - The destination port.   protocol - The protocol.
-  source - The ID of the resource.
+  the resource.   filter-at-source.source-address - The source IPv4 address at the source.
+  filter-at-source.source-port-range - The source port range at the source.
+  filter-at-source.destination-address - The destination IPv4 address at the source.
+  filter-at-source.destination-port-range - The destination port range at the source.
+  filter-at-destination.source-address - The source IPv4 address at the destination.
+  filter-at-destination.source-port-range - The source port range at the destination.
+  filter-at-destination.destination-address - The destination IPv4 address at the
+  destination.   filter-at-destination.destination-port-range - The destination port range at
+  the destination.   protocol - The protocol.   source - The ID of the resource.
 - `"MaxResults"`: The maximum number of results to return with a single call. To retrieve
   the remaining results, make another call with the returned nextToken value.
 - `"NetworkInsightsPathId"`: The IDs of the paths.
@@ -21065,7 +21068,9 @@ end
 Lists the resource groups to which a Capacity Reservation has been added.
 
 # Arguments
-- `capacity_reservation_id`: The ID of the Capacity Reservation.
+- `capacity_reservation_id`: The ID of the Capacity Reservation. If you specify a Capacity
+  Reservation that is shared with you, the operation returns only Capacity Reservation groups
+  that you own.
 
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
@@ -21456,7 +21461,9 @@ end
     get_ipam_pool_allocations(ipam_pool_id)
     get_ipam_pool_allocations(ipam_pool_id, params::Dict{String,<:Any})
 
-Get a list of all the CIDR allocations in an IPAM pool.
+Get a list of all the CIDR allocations in an IPAM pool.  If you use this action after
+AllocateIpamPoolCidr or ReleaseIpamPoolAllocation, note that all EC2 API actions follow an
+eventual consistency model.
 
 # Arguments
 - `ipam_pool_id`: The ID of the IPAM pool you want to see the allocations for.
@@ -22628,6 +22635,60 @@ function get_vpn_connection_device_types(
     return ec2(
         "GetVpnConnectionDeviceTypes",
         params;
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    get_vpn_tunnel_replacement_status(vpn_connection_id, vpn_tunnel_outside_ip_address)
+    get_vpn_tunnel_replacement_status(vpn_connection_id, vpn_tunnel_outside_ip_address, params::Dict{String,<:Any})
+
+Get details of available tunnel endpoint maintenance.
+
+# Arguments
+- `vpn_connection_id`: The ID of the Site-to-Site VPN connection.
+- `vpn_tunnel_outside_ip_address`: The external IP address of the VPN tunnel.
+
+# Optional Parameters
+Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
+- `"DryRun"`: Checks whether you have the required permissions for the action, without
+  actually making the request, and provides an error response. If you have the required
+  permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
+"""
+function get_vpn_tunnel_replacement_status(
+    VpnConnectionId,
+    VpnTunnelOutsideIpAddress;
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return ec2(
+        "GetVpnTunnelReplacementStatus",
+        Dict{String,Any}(
+            "VpnConnectionId" => VpnConnectionId,
+            "VpnTunnelOutsideIpAddress" => VpnTunnelOutsideIpAddress,
+        );
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function get_vpn_tunnel_replacement_status(
+    VpnConnectionId,
+    VpnTunnelOutsideIpAddress,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return ec2(
+        "GetVpnTunnelReplacementStatus",
+        Dict{String,Any}(
+            mergewith(
+                _merge,
+                Dict{String,Any}(
+                    "VpnConnectionId" => VpnConnectionId,
+                    "VpnTunnelOutsideIpAddress" => VpnTunnelOutsideIpAddress,
+                ),
+                params,
+            ),
+        );
         aws_config=aws_config,
         feature_set=SERVICE_FEATURE_SET,
     )
@@ -26655,6 +26716,8 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"DryRun"`: Checks whether you have the required permissions for the action, without
   actually making the request, and provides an error response. If you have the required
   permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
+- `"SkipTunnelReplacement"`: Choose whether or not to trigger immediate tunnel replacement.
+  Valid values: True | False
 """
 function modify_vpn_tunnel_options(
     TunnelOptions,
@@ -27816,7 +27879,8 @@ end
 Release an allocation within an IPAM pool. You can only use this action to release manual
 allocations. To remove an allocation for a resource without deleting the resource, set its
 monitored state to false using ModifyIpamResourceCidr. For more information, see Release an
-allocation in the Amazon VPC IPAM User Guide.
+allocation in the Amazon VPC IPAM User Guide.   All EC2 API actions follow an eventual
+consistency model.
 
 # Arguments
 - `cidr`: The CIDR of the allocation you want to release.
@@ -28217,6 +28281,61 @@ function replace_transit_gateway_route(
                 Dict{String,Any}(
                     "DestinationCidrBlock" => DestinationCidrBlock,
                     "TransitGatewayRouteTableId" => TransitGatewayRouteTableId,
+                ),
+                params,
+            ),
+        );
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+
+"""
+    replace_vpn_tunnel(vpn_connection_id, vpn_tunnel_outside_ip_address)
+    replace_vpn_tunnel(vpn_connection_id, vpn_tunnel_outside_ip_address, params::Dict{String,<:Any})
+
+Trigger replacement of specified VPN tunnel.
+
+# Arguments
+- `vpn_connection_id`: The ID of the Site-to-Site VPN connection.
+- `vpn_tunnel_outside_ip_address`: The external IP address of the VPN tunnel.
+
+# Optional Parameters
+Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
+- `"ApplyPendingMaintenance"`: Trigger pending tunnel endpoint maintenance.
+- `"DryRun"`: Checks whether you have the required permissions for the action, without
+  actually making the request, and provides an error response. If you have the required
+  permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
+"""
+function replace_vpn_tunnel(
+    VpnConnectionId,
+    VpnTunnelOutsideIpAddress;
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return ec2(
+        "ReplaceVpnTunnel",
+        Dict{String,Any}(
+            "VpnConnectionId" => VpnConnectionId,
+            "VpnTunnelOutsideIpAddress" => VpnTunnelOutsideIpAddress,
+        );
+        aws_config=aws_config,
+        feature_set=SERVICE_FEATURE_SET,
+    )
+end
+function replace_vpn_tunnel(
+    VpnConnectionId,
+    VpnTunnelOutsideIpAddress,
+    params::AbstractDict{String};
+    aws_config::AbstractAWSConfig=global_aws_config(),
+)
+    return ec2(
+        "ReplaceVpnTunnel",
+        Dict{String,Any}(
+            mergewith(
+                _merge,
+                Dict{String,Any}(
+                    "VpnConnectionId" => VpnConnectionId,
+                    "VpnTunnelOutsideIpAddress" => VpnTunnelOutsideIpAddress,
                 ),
                 params,
             ),
@@ -29239,7 +29358,13 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"ElasticInferenceAccelerator"`: An elastic inference accelerator to associate with the
   instance. Elastic inference accelerators are a resource you can attach to your Amazon EC2
   instances to accelerate your Deep Learning (DL) inference workloads. You cannot specify
-  accelerators from different generations in the same request.
+  accelerators from different generations in the same request.  Starting April 15, 2023,
+  Amazon Web Services will not onboard new customers to Amazon Elastic Inference (EI), and
+  will help current customers migrate their workloads to options that offer better price and
+  performance. After April 15, 2023, new customers will not be able to launch instances with
+  Amazon EI accelerators in Amazon SageMaker, Amazon ECS, or Amazon EC2. However, customers
+  who have used Amazon EI at least once during the past 30-day period are considered current
+  customers and will be able to continue using the service.
 - `"EnclaveOptions"`: Indicates whether the instance is enabled for Amazon Web Services
   Nitro Enclaves. For more information, see  What is Amazon Web Services Nitro Enclaves? in
   the Amazon Web Services Nitro Enclaves User Guide. You can't enable Amazon Web Services

@@ -375,7 +375,8 @@ end
 
 Gets an authentication token and the URL at which the notebook can be accessed. During
 programmatic access, CreatePresignedNotebookUrl must be called every 10 minutes to refresh
-the authentication token.
+the authentication token. For information about granting programmatic access, see Grant
+programmatic access.
 
 # Arguments
 - `session_id`: The session ID.
@@ -410,9 +411,8 @@ end
     create_work_group(name)
     create_work_group(name, params::Dict{String,<:Any})
 
-Creates a workgroup with the specified name. Only one of Configurations or Configuration
-can be specified; Configurations for a workgroup with multi engine support (for example, an
-Apache Spark enabled workgroup) or Configuration for an Athena SQL workgroup.
+Creates a workgroup with the specified name. A workgroup can be an Apache Spark enabled
+workgroup or an Athena SQL workgroup.
 
 # Arguments
 - `name`: The workgroup name.
@@ -420,10 +420,11 @@ Apache Spark enabled workgroup) or Configuration for an Athena SQL workgroup.
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
 - `"Configuration"`: Contains configuration information for creating an Athena SQL
-  workgroup, which includes the location in Amazon S3 where query results are stored, the
-  encryption configuration, if any, used for encrypting query results, whether the Amazon
-  CloudWatch Metrics are enabled for the workgroup, the limit for the amount of bytes scanned
-  (cutoff) per query, if it is specified, and whether workgroup's settings (specified with
+  workgroup or Spark enabled Athena workgroup. Athena SQL workgroup configuration includes
+  the location in Amazon S3 where query and calculation results are stored, the encryption
+  configuration, if any, used for encrypting query results, whether the Amazon CloudWatch
+  Metrics are enabled for the workgroup, the limit for the amount of bytes scanned (cutoff)
+  per query, if it is specified, and whether workgroup's settings (specified with
   EnforceWorkGroupConfiguration) in the WorkGroupConfiguration override client-side settings.
   See WorkGroupConfigurationEnforceWorkGroupConfiguration.
 - `"Description"`: The workgroup description.
@@ -600,7 +601,7 @@ Deletes the workgroup with the specified name. The primary workgroup cannot be d
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
 - `"RecursiveDeleteOption"`: The option to delete the workgroup and its contents even if
-  the workgroup contains any named queries or query executions.
+  the workgroup contains any named queries, query executions, or notebooks.
 """
 function delete_work_group(WorkGroup; aws_config::AbstractAWSConfig=global_aws_config())
     return athena(
@@ -701,7 +702,7 @@ end
     get_calculation_execution_code(calculation_execution_id)
     get_calculation_execution_code(calculation_execution_id, params::Dict{String,<:Any})
 
-Retrieves a pre-signed URL to a copy of the code that was executed for the calculation.
+Retrieves the unencrypted code that was executed for the calculation.
 
 # Arguments
 - `calculation_execution_id`: The calculation execution UUID.
@@ -1003,15 +1004,15 @@ end
     get_query_results(query_execution_id, params::Dict{String,<:Any})
 
 Streams the results of a single query execution specified by QueryExecutionId from the
-Athena query results location in Amazon S3. For more information, see Query Results in the
-Amazon Athena User Guide. This request does not execute the query but returns results. Use
-StartQueryExecution to run a query. To stream query results successfully, the IAM principal
-with permission to call GetQueryResults also must have permissions to the Amazon S3
-GetObject action for the Athena query results location.  IAM principals with permission to
-the Amazon S3 GetObject action for the query results location are able to retrieve query
-results from Amazon S3 even if permission to the GetQueryResults action is denied. To
-restrict user or role access, ensure that Amazon S3 permissions to the Athena query
-location are denied.
+Athena query results location in Amazon S3. For more information, see Working with query
+results, recent queries, and output files in the Amazon Athena User Guide. This request
+does not execute the query but returns results. Use StartQueryExecution to run a query. To
+stream query results successfully, the IAM principal with permission to call
+GetQueryResults also must have permissions to the Amazon S3 GetObject action for the Athena
+query results location.  IAM principals with permission to the Amazon S3 GetObject action
+for the query results location are able to retrieve query results from Amazon S3 even if
+permission to the GetQueryResults action is denied. To restrict user or role access, ensure
+that Amazon S3 permissions to the Athena query location are denied.
 
 # Arguments
 - `query_execution_id`: The unique ID of the query execution.
@@ -1308,8 +1309,8 @@ end
     list_application_dpusizes()
     list_application_dpusizes(params::Dict{String,<:Any})
 
-Returns the supported DPU sizes for the supported application runtimes (for example,
-Jupyter 1.0).
+Returns the supported DPU sizes for the supported application runtimes (for example, Athena
+notebook version 1).
 
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:
@@ -1481,9 +1482,8 @@ end
     list_executors(session_id)
     list_executors(session_id, params::Dict{String,<:Any})
 
-Lists, in descending order, the executors that have been submitted to a session. Newer
-executors are listed first; older executors are listed later. The result can be optionally
-filtered by state.
+Lists, in descending order, the executors that joined a session. Newer executors are listed
+first; older executors are listed later. The result can be optionally filtered by state.
 
 # Arguments
 - `session_id`: The session ID.
@@ -1884,7 +1884,7 @@ end
     start_calculation_execution(session_id, params::Dict{String,<:Any})
 
 Submits calculations for execution within a session. You can supply the code to run as an
-inline code block within the request or as an Amazon S3 URL.
+inline code block within the request.
 
 # Arguments
 - `session_id`: The session ID.
@@ -2016,9 +2016,11 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
   for users. If you are not using the Amazon Web Services SDK or the Amazon Web Services CLI,
   you must provide this token or the action will fail.
 - `"Description"`: The session description.
-- `"NotebookVersion"`: The notebook version. This value is required only when requesting
-  that a notebook server be started for the session. The only valid notebook version is
-  Jupyter1.0.
+- `"NotebookVersion"`: The notebook version. This value is supplied automatically for
+  notebook sessions in the Athena console and is not required for programmatic session
+  access. The only valid notebook version is Athena notebook version 1. If you specify a
+  value for NotebookVersion, you must also specify a value for NotebookId. See
+  EngineConfigurationAdditionalConfigs.
 - `"SessionIdleTimeoutInMinutes"`: The idle timeout in minutes for the session.
 """
 function start_session(
@@ -2389,7 +2391,8 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
   required because Amazon Web Services SDKs (for example the Amazon Web Services SDK for
   Java) auto-generate the token for you. If you are not using the Amazon Web Services SDK or
   the Amazon Web Services CLI, you must provide this token or the action will fail.
-- `"SessionId"`: The ID of the session in which the notebook will be updated.
+- `"SessionId"`: The active notebook session ID. Required if the notebook has an active
+  session.
 """
 function update_notebook(
     NotebookId, Payload, Type; aws_config::AbstractAWSConfig=global_aws_config()
@@ -2532,9 +2535,7 @@ end
     update_work_group(work_group, params::Dict{String,<:Any})
 
 Updates the workgroup with the specified name. The workgroup's name cannot be changed. Only
-one of ConfigurationsUpdates or ConfigurationUpdates can be specified;
-ConfigurationsUpdates for a workgroup with multi engine support (for example, an Apache
-Spark enabled workgroup) or ConfigurationUpdates for an Athena SQL workgroup.
+ConfigurationUpdates can be specified.
 
 # Arguments
 - `work_group`: The specified workgroup that will be updated.

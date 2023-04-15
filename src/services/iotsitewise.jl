@@ -273,7 +273,7 @@ current values in the IoT SiteWise User Guide.
 
 # Arguments
 - `entries`: The list of asset property value entries for the batch get request. You can
-  specify up to 16 entries per request.
+  specify up to 128 entries per request.
 
 # Optional Parameters
 Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys are:

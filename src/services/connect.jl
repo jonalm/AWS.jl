@@ -3594,7 +3594,7 @@ Gets metric data from the specified Amazon Connect instance.   GetMetricDataV2 o
 features than GetMetricData, the previous version of this API. It has new metrics, offers
 filtering at a metric level, and offers the ability to filter and group data by channels,
 queues, routing profiles, agents, and agent hierarchy levels. It can retrieve historical
-data for last the 14 days, in 24-hour intervals. For a description of the historical
+data for the last 14 days, in 24-hour intervals. For a description of the historical
 metrics that are supported by GetMetricDataV2 and GetMetricData, see Historical metrics
 definitions in the Amazon Connect Administrator's Guide.  This API is not available in the
 Amazon Web Services GovCloud (US) Regions.
@@ -3602,8 +3602,8 @@ Amazon Web Services GovCloud (US) Regions.
 # Arguments
 - `end_time`: The timestamp, in UNIX Epoch time format, at which to end the reporting
   interval for the retrieval of historical metrics data. The time must be later than the
-  start time timestamp. The time range between the start and end time must be less than 24
-  hours.
+  start time timestamp. It cannot be later than the current timestamp. The time range between
+  the start and end time must be less than 24 hours.
 - `filters`: The filters to apply to returned metrics. You can filter on the following
   resources:   Queues   Routing profiles   Agents   Channels   User hierarchy groups   At
   least one filter must be passed from queues, routing profiles, agents, or user hierarchy
@@ -3660,11 +3660,14 @@ Amazon Web Services GovCloud (US) Regions.
   Valid groupings and filters: Queue, Channel, Routing Profile Threshold: For ThresholdValue,
   enter any whole number from 1 to 604800 (inclusive), in seconds. For Comparison, you must
   enter LT (for \"Less than\").   SUM_CONTACTS_ANSWERED_IN_X  Unit: Count Valid groupings and
-  filters: Queue, Channel, Routing Profile  SUM_CONTACTS_ABANDONED_IN_X  Unit: Count Valid
-  groupings and filters: Queue, Channel, Routing Profile  SUM_CONTACTS_DISCONNECTED   Valid
-  metric filter key: DISCONNECT_REASON  Unit: Count Valid groupings and filters: Queue,
-  Channel, Routing Profile  SUM_RETRY_CALLBACK_ATTEMPTS  Unit: Count Valid groupings and
-  filters: Queue, Channel, Routing Profile
+  filters: Queue, Channel, Routing Profile Threshold: For ThresholdValue, enter any whole
+  number from 1 to 604800 (inclusive), in seconds. For Comparison, you must enter LT (for
+  \"Less than\").   SUM_CONTACTS_ABANDONED_IN_X  Unit: Count Valid groupings and filters:
+  Queue, Channel, Routing Profile Threshold: For ThresholdValue, enter any whole number from
+  1 to 604800 (inclusive), in seconds. For Comparison, you must enter LT (for \"Less than\").
+    SUM_CONTACTS_DISCONNECTED   Valid metric filter key: DISCONNECT_REASON  Unit: Count Valid
+  groupings and filters: Queue, Channel, Routing Profile  SUM_RETRY_CALLBACK_ATTEMPTS  Unit:
+  Count Valid groupings and filters: Queue, Channel, Routing Profile
 - `resource_arn`: The Amazon Resource Name (ARN) of the resource. This includes the
   instanceId an Amazon Connect instance.
 - `start_time`: The timestamp, in UNIX Epoch time format, at which to start the reporting
@@ -5750,7 +5753,7 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
   contact attributes.  There can be up to 32,768 UTF-8 bytes across all key-value pairs per
   contact. Attribute keys can include only alphanumeric, dash, and underscore characters.
 - `"ChatDurationInMinutes"`: The total duration of the newly started chat session. If not
-  specified, the chat session duration defaults to 25 hour. The minumum configurable time is
+  specified, the chat session duration defaults to 25 hour. The minimum configurable time is
   60 minutes. The maximum configurable time is 10,080 minutes (7 days).
 - `"ClientToken"`: A unique, case-sensitive identifier that you provide to ensure the
   idempotency of the request. If not provided, the Amazon Web Services SDK populates this
@@ -5759,11 +5762,19 @@ Optional parameters can be passed as a `params::Dict{String,<:Any}`. Valid keys 
 - `"PersistentChat"`: Enable persistent chats. For more information about enabling
   persistent chat, and for example use cases and how to configure for them, see Enable
   persistent chat.
-- `"SupportedMessagingContentTypes"`: The supported chat message content types. Content
-  types must always contain text/plain. You can then put any other supported type in the
-  list. For example, all the following lists are valid because they contain text/plain:
-  [text/plain, text/markdown, application/json], [text/markdown, text/plain], [text/plain,
-  application/json].
+- `"RelatedContactId"`: The unique identifier for an Amazon Connect contact. This
+  identifier is related to the chat starting.  You cannot provide data for both
+  RelatedContactId and PersistentChat.
+- `"SupportedMessagingContentTypes"`: The supported chat message content types. Supported
+  types are text/plain, text/markdown, application/json,
+  application/vnd.amazonaws.connect.message.interactive, and
+  application/vnd.amazonaws.connect.message.interactive.response.  Content types must always
+  contain text/plain. You can then put any other supported type in the list. For example, all
+  the following lists are valid because they contain text/plain: [text/plain, text/markdown,
+  application/json], [text/markdown, text/plain], [text/plain, application/json,
+  application/vnd.amazonaws.connect.message.interactive.response].   The type
+  application/vnd.amazonaws.connect.message.interactive is required to use the Show view flow
+  block.
 """
 function start_chat_contact(
     ContactFlowId,
